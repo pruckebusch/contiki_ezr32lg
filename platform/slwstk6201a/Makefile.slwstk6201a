@@ -1,0 +1,37 @@
+CONTIKI_TARGET_DIRS 			=  . apps ../../apps/shell net net/radio
+
+# first compiler flags; important for:
+# autostarting, which frequency band to use
+# the platform needs a define because the easy_radio_plugin_manager includes a config file 
+# based on the platform
+CFLAGS							+= -DAUTOSTART_ENABLE -DUSE_BAND_434 -DSL_WSTK6201A -DEZRADIO_DRIVER_EXTENDED_SUPPORT \
+								   -DEZRADIO_DRIVER_FULL_SUPPORT -DRADIO_USE_GENERATED_CONFIGURATION=1
+
+WITH_UART1						=  1
+COFFEE							=  1
+WITH_SPI1						=  0
+WITH_PM							=  0
+
+DEPENDENCIES					+= sensors.c linkaddr.c node-id.c
+RADIO	 						=  ezradio_api_lib.c ezradio_receive_plugin.c ezradio_transmit_plugin.c ezradio_hal.c \
+								   ezradio_comm.c ezradio_api_lib_add.c spidrv.c rtcdriver.c dmadrv.c ustimer.c radio-arch.c
+ARCH 							+= leds.c leds-arch.c battery-sensor.c button0-sensor.c button1-sensor.c radio-sensor.c symbols.c platform-init.c
+ELF								=  symtab.c symbols.c
+
+
+ifndef CONTIKI_TARGET_MAIN
+	CONTIKI_TARGET_MAIN 		=  contiki-main.c
+endif
+
+CONTIKI_TARGET_SOURCEFILES 		+= $(DEPENDENCIES) $(RADIO) $(ARCH) $(ELF) $(CONTIKI_TARGET_MAIN)
+
+MCU								=  EZR32LG330F256R55
+
+ifdef COFFEE
+	CONTIKI_TARGET_SOURCEFILES 	+= cfs-coffee.c
+	CFLAGS						+= -DCOFFEE 
+endif
+
+
+include $(CONTIKI)/cpu/arm/ezr32/Makefile.ezr32
+

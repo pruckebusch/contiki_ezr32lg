@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.2071461929">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.2071461929" moduleId="org.eclipse.cdt.core.settings" name="Default">
+				<macros>
+					<stringMacro name="TARGET" type="VALUE_TEXT" value="TARGET=slwstk6201a"/>
+					<stringMacro name="BUILD_LOC_BC_TEST" type="VALUE_TEXT" value="/home/bart/Dropbox/EICT/contiki_ezr32/examples/ezr32/broadcast-test"/>
+					<stringMacro name="BUILD_LOC_ELF_TEST" type="VALUE_TEXT" value="/home/bart/Dropbox/EICT/contiki_ezr32/examples/ezr32/elfloader-test"/>
+					<stringMacro name="BUILD_LOC_HELLO_WORLD" type="VALUE_TEXT" value="/home/bart/Dropbox/EICT/contiki_ezr32/examples/ezr32/hello-world"/>
+					<stringMacro name="BUILD_LOC_RADIO_TEST" type="VALUE_TEXT" value="/home/bart/Dropbox/EICT/contiki_ezr32/examples/ezr32/radio-test"/>
+					<stringMacro name="BUILD_LOC_CFS_TEST" type="VALUE_TEXT" value="/home/bart/Dropbox/EICT/contiki_ezr32/examples/ezr32/cfs-test"/>
+				</macros>
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.2071461929" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.2071461929.1932538823" name="/" resourcePath="">
+						<toolChain id="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.264460516" name="Si32 GNU ARM" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.silabs.ide.si32.gcc.cdt.managedbuild.target.gnu.platform.base.775747886" isAbstract="false" name="Debug Platform" osList="win32,linux,macosx" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.target.gnu.platform.base"/>
+							<builder arguments="${TARGET}" buildPath="${BUILD_LOC_ELF_TEST}" command="make" id="com.silabs.ide.si32.gcc.cdt.managedbuild.target.gnu.builder.base.1344926824" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Si32 GNU ARM Builder" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.target.gnu.builder.base"/>
+							<tool id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.base.954124602" name="GNU ARM C Compiler" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.base">
+								<inputType id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.input.1049317892" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.base.443058948" name="GNU ARM C++ Compiler" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.base">
+								<inputType id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.input.715333930" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.assembler.base.355636" name="GNU ARM Assembler" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.assembler.base">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.657456713" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.base.429348307" name="GNU ARM C Linker" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.linker.base"/>
+							<tool id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.linker.base.1252369915" name="GNU ARM C++ Linker" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.linker.base">
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1747574919" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.archiver.base.1966776892" name="GNU ARM Archiver" superClass="com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.archiver.base"/>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="com.silabs.ss.framework.ide.project.core.cpp"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1300185181;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1300185181.1053704769;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.649191628;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1063200340">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1300185181;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1300185181.1053704769;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1533205392;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.305884259">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1975057843;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.1975057843.2081057983;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1379667391;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1553824773">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.469611394;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.469611394.828077968;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.2114330733;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1237118045">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.469611394;ilg.gnuarmeclipse.managedbuild.cross.toolchain.base.469611394.828077968;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.687264526;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1138052240">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.1674595367;com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.1674595367.926478870;com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.base.1669053250;com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.cpp.compiler.input.664506864">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="0.311932541">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.1674595367;com.silabs.ide.si32.gcc.cdt.managedbuild.toolchain.exe.1674595367.926478870;com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.base.1278865876;com.silabs.ide.si32.gcc.cdt.managedbuild.tool.gnu.c.compiler.input.302426982">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="contiki_ezr32.null.1405571273" name="contiki_ezr32"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="FOLDER" workspacePath="/contiki_ezr32/examples/ezr32"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="com.silabs.ss.framework.ide.project.core.cpp"/>
+</cproject>
