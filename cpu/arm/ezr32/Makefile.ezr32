@@ -157,7 +157,7 @@ SIZE     	= arm-none-eabi-size
 
 SIZEFLAGS 	= -A
 
-FLASHER 	= sh eACommander.sh 
+FLASHER 	= sh $(CONTIKI)/tools/energymicro/eACommander.sh 
 
 # Check if we are running under Windows
 ifeq ($(HOST_OS),Windows)
@@ -248,7 +248,13 @@ CUSTOM_RULE_LINK = yes
 	@echo 'Running size tool'
 	$(SIZE) $(CONTIKI_PROJECT).axf
 	@echo ' '
-	
+
+%.upload: %.bin
+	@echo "Flash to MCU:"
+	$(FLASHER) $(FLASHEROPTS) $<
+	$(FLASHER) --reset
+	@echo " "
+
 clean: clean_cpu
 
 clean_cpu:

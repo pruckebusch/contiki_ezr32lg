@@ -144,6 +144,30 @@ static const unsigned char elf_magic_header[] =
    0x01,                    /* Only ELF version 1. */
   };
 
+static void seek_print(int fd, unsigned int offset, int len){
+	int i;
+	int j;
+	uint32_t byte;
+	cfs_seek(fd, offset, CFS_SEEK_SET);
+	for(i=0; i<len; i+=4){
+		cfs_read(fd,&byte,4);
+		for(j=0;j<4;j++){
+			printf("%02x ", ((uint8_t*) &byte)[j]);
+		}
+		if((i+1)%20 == 0){
+			printf("\n");
+		}
+	}
+	if(i<len){
+		byte = 0;
+		cfs_read(fd,&byte,i%len);
+		for(j=0;j<i%len;j++){
+			printf("%02x ", ((uint8_t*) &byte)[j]);
+		}
+	}
+	printf("\n");
+}
+
 /*---------------------------------------------------------------------------*/
 static void
 seek_read(int fd, unsigned int offset, char *buf, int len)
@@ -284,7 +308,8 @@ relocate_section(int fd,
       /* copy addend to rela structure */
       seek_read(fd, sectionaddr + rela.r_offset, (char *)&rela.r_addend, 4);
     }
-
+    
+    PRINTF("relocating base: 0x%08x + offset 0x%08x = 0x%08x to addr 0x%08x with addend 0x%08x \n", (uint32_t) sectionbase, rela.r_offset, ((uint32_t) sectionbase) + rela.r_offset, ((uint32_t) addr), rela.r_addend);
     elfloader_arch_relocate(fd, sectionaddr, sectionbase, &rela, addr);
   }
   return ELFLOADER_OK;
@@ -425,6 +450,7 @@ elfloader_load(int fd)
     /* The name of the section is contained in the strings table. */
     nameptr = strs + shdr.sh_name;
     seek_read(fd, nameptr, name, sizeof(name));
+    PRINTF("%s\n",name);
     PRINTF("Section shdrptr 0x%x, %d + %d type %d\n",
 	   shdrptr,
 	   strs, shdr.sh_name,
@@ -517,17 +543,13 @@ elfloader_load(int fd)
   PRINTF("text base address: text.address = 0x%08x\n", text.address);
   PRINTF("rodata base address: rodata.address = 0x%08x\n", rodata.address);
 
-
   /* If we have text segment relocations, we process them. */
-  PRINTF("elfloader: relocate text\n");
   if(textrelasize > 0) {
-	    ret = relocate_section(fd,
-			   textrelaoff, textrelasize,
-			   textoff,
-			   text.address,
-			   strs,
-			   strtaboff,
-			   symtaboff, symtabsize, using_relas);
+		PRINTF("elfloader: BEFORE relocate text\n");
+	    seek_print(fd,textoff,textsize);
+	    ret = relocate_section(fd, textrelaoff, textrelasize, textoff, text.address, strs, strtaboff, symtaboff, symtabsize, using_relas);
+	    PRINTF("elfloader: AFTER relocate text\n");
+	    seek_print(fd,textoff,textsize);
     if(ret != ELFLOADER_OK) {
       return ret;
     }
@@ -576,19 +598,6 @@ elfloader_load(int fd)
   // arch_write_rom: write rodata/text to rom
   // allocated rom = array allocated in elfloader-arch
   // address space should be used by text/rodata at this point
-
-  PRINTF("TEXT.ADDRESS: 0x%08X \n", text.address);
-
-	int f;
-	for (f = 0; f < textsize; f++) {
-		PRINTF("0x%02X,", text.address[f]);
-		if ((f+1) % 20 == 0 && f != 0) {
-			printf("\n");
-		}
-	}
-
-	printf("\n");
-
 
   memset(bss.address, 0, bsssize);
   seek_read(fd, dataoff, data.address, datasize);

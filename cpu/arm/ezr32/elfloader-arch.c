@@ -21,36 +21,78 @@ struct elf32_rel {
 
 // ToDo
 // word-aligned
-static uint16_t datamemory_aligned[ELFLOADER_DATAMEMORY_SIZE];
+static uint32_t datamemory_aligned[ELFLOADER_DATAMEMORY_SIZE];
 static uint8_t *datamemory = (uint8_t *) datamemory_aligned;
 
 #if TEXT_IN_ROM
-	static const uint16_t textmemory[ELFLOADER_TEXTMEMORY_SIZE] = {0};
+	//static const uint32_t textmemory[ELFLOADER_TEXTMEMORY_SIZE] __attribute__ ((aligned (2048))) = {0};
+	static const uint32_t textmemory[ELFLOADER_TEXTMEMORY_SIZE] = {0};
+	uint32_t text_addr = 0x0001F800;
 #else
-	static uint16_t textmemory[ELFLOADER_TEXTMEMORY_SIZE];
+	static uint32_t textmemory[ELFLOADER_TEXTMEMORY_SIZE];
 #endif
 
 #define READSIZE 				sizeof(datamemory_aligned)
 
 // Supported relocations
-#define R_ARM_ABS32				2
-#define R_ARM_THM_CALL			10
+#define R_ARM_ABS32                2
+#define R_ARM_THM_CALL            10
+#define R_ARM_THM_JUMP24          30
 
 #define ELF32_R_TYPE(info)      ((unsigned char)(info))
 
+
+void relJmpCall(int input_fd, elf32_addr relAddr, elf32_addr symAddr, uint32_t addend) {
+  uint32_t relValue = 0;
+  uint16_t upper_insn = ((uint16_t *) &addend)[0];
+  uint16_t lower_insn = ((uint16_t *) &addend)[1];
+  //uint16_t upper_insn = 0xF7FF;
+  //uint16_t lower_insn = 0xFFFE;
+  uint32_t S = (upper_insn >> 10) & 1;
+  uint32_t J1 = (lower_insn >> 13) & 1;
+  uint32_t J2 = (lower_insn >> 11) & 1;
+  printf("relAddr 0x%08x, upper 0x%04x, lower 0x%04x, S 0x%08x, J1 0x%08x, J2 0x%08x\n", relAddr, upper_insn, lower_insn, S, J1, J2);
+
+  int32_t offset = (S << 24) | /* S     -> offset[24] */
+    ((~(J1 ^ S) & 1) << 23) | /* J1    -> offset[23] */
+    ((~(J2 ^ S) & 1) << 22) | /* J2    -> offset[22] */
+    ((upper_insn & 0x03ff) << 12) | /* imm10 -> offset[12:21] */
+    ((lower_insn & 0x07ff) << 1); /* imm11 -> offset[1:11] */
+  printf("offset 0x%08x, %d\n", offset, offset);
+  if (offset & 0x01000000)
+    offset -= 0x02000000;
+  printf("offset 0x%08x, %d\n", offset, offset);
+  offset += symAddr - relAddr;
+  printf("offset 0x%08x, %d\n", offset, offset);
+  S = (offset >> 24) & 1;
+  J1 = S ^ (~(offset >> 23) & 1);
+  J2 = S ^ (~(offset >> 22) & 1);
+  
+  upper_insn = ((upper_insn & 0xf800) | (S << 10) | ((offset >> 12) & 0x03ff));
+  ((uint16_t*) &relValue)[1] = upper_insn;
+
+  lower_insn = ((lower_insn & 0xd000) | (J1 << 13) | (J2 << 11)
+                | ((offset >> 1) & 0x07ff));
+  ((uint16_t*) &relValue)[0] = lower_insn;
+  printf("retValue 0x%08x, relAddr 0x%08x, upper 0x%04x, lower 0x%04x, S 0x%08x, J1 0x%08x, J2 0x%08x\n", relValue, relAddr, upper_insn, lower_insn, S, J1, J2);
+  if(cfs_write(input_fd, &relValue, 4) != 4){
+	  printf("CFS ERROR!!!!!\n");
+  }
+}
+
 int elfloader_arch_relocate(int input_fd, unsigned int sectionoffset,
-		char *sectionaddr, struct elf32_rel *rel, char *addr) {
+		char *sectionaddr, struct elf32_rela *rela, char *addr) {
 
     PRINTF("ARCH RELOCATE: FD: %d, SECTIONOFFSET: %p, SECTIONBASE: %p, ADDR: %p \n", input_fd, sectionoffset, sectionaddr, addr);
 
-	uint32_t type = ELF32_R_TYPE(rel->r_info);
+	uint32_t type = ELF32_R_TYPE(rela->r_info);
 
 	PRINTF("elfloader: arch_relocate \n");
-	PRINTF("elfloader: offset: 0x%08X, type: %d\n", rel->r_offset, type);
+	PRINTF("elfloader: offset: 0x%08X, type: %d\n", rela->r_offset, type);
 
 	int s = -1;
 	// set current fd to relocation address
-	s = cfs_seek(input_fd, sectionoffset + rel->r_offset, CFS_SEEK_CUR);
+	s = cfs_seek(input_fd, sectionoffset + rela->r_offset, CFS_SEEK_SET);
 	if (s == -1) {
 		PRINTF("Invalid file descriptor or offset (%d) exceeds max/min file boundary\n", s);
 		// ToDo add missing return types
@@ -61,18 +103,91 @@ int elfloader_arch_relocate(int input_fd, unsigned int sectionoffset,
 	case R_ARM_ABS32: {
 		// relocation calculation: (S + A) | T
 		// with T = 0
-		int32_t addend;
+		PRINTF("addend: %lx, addr: %p\n", rela->r_addend, addr);
+		addr += rela->r_addend;
+		cfs_write(input_fd, &addr, sizeof(char*));
+		PRINTF("sectionadd + rela->r_offset: %p, addr: %p\n", sectionaddr + rela->r_offset, addr);
+		
+		/*int32_t addend;
 		cfs_read(input_fd, (char *) &addend, 4);
 		addr += addend;
 	    cfs_seek(input_fd, -4, CFS_SEEK_CUR);
 		cfs_write(input_fd, &addr, 4);
-
+		
 		PRINTF("elfloader: addend %d \n", addend);
 		PRINTF("Addr in FLASH to write to: %p, addr in RAM: %p\n", sectionaddr + rel->r_offset, addr);
+		*/
 	}
 		break;
-	case R_ARM_THM_CALL: {
+	case R_ARM_THM_CALL:
+	case R_ARM_THM_JUMP24:
+	{
+		
+		//~ uint16_t instr[2];
+		//~ cfs_read(input_fd, (char *)instr, 4);
+		//~ uint16_t upper = instr[0];
+        //~ uint16_t lower = instr[1];
+        uint32_t tgt_fulloffset = (uint32_t) addr;
+        uint32_t locoffset = ((uint32_t) sectionaddr) + rela->r_offset;
+        printf("relocating %p(0x%08x) to %p(0x%08x) addend (0x%08x)\n", locoffset, locoffset, tgt_fulloffset, tgt_fulloffset, rela->r_addend);
+        relJmpCall(input_fd, locoffset, tgt_fulloffset, rela->r_addend);
+		break;
+	}
+	/*{
 		uint16_t instr[2];
+		cfs_read(input_fd, (char *)instr, 4);
+		uint32_t i, j;
+		int32_t addend, tmpAddr;
+		int32_t final_offset, offset;
+		i = instr[1];
+		j = instr[0];
+		j = j << 16;
+		i = i | j;
+		PRINTF("R_ARM_THM_CALL instruction: %lx\n", i);
+
+		i = (i << 2) & 0x00FFFFFF;
+		if ((i & 0x00800000)!=0)
+			i = i | 0xFF000000;
+		addend = (int32_t)i;
+
+		PRINTF("\tAddend : %lx (%ld)\n", addend, addend);
+		PRINTF("\tJump target (calculated by Contiki) : %p\n", addr);
+		PRINTF("\tJump target (real) : %p\n", &puts);
+		PRINTF("\tSection address : %p\n", sectionaddr);
+		PRINTF("\tProgram Counter (PC) : %p\n", sectionaddr + rela->r_offset);
+		PRINTF("\tProgram Counter + 8 (PC) : %p\n", sectionaddr + rela->r_offset + 8);
+
+		tmpAddr = (uint32_t)addr;
+		if ((tmpAddr & 0x1) != 0)
+			tmpAddr = tmpAddr & (~1); // remove last bit if set
+
+		offset = tmpAddr - ((uint32_t)sectionaddr + rela->r_offset);
+		offset -= 4; // the adjusment for Thumb instructions
+
+		PRINTF("\tCalculated offset (%ld): %lx\n", offset, offset);
+
+		// keep 11 bits
+		j = offset & 0x007FFFFF;
+		j >>= 12;
+		PRINTF("\tThe first half is %lx\n", j);
+		i = offset & 0x00000FFF;
+		i >>= 1;
+		PRINTF("\tThe second half is %lx\n", i);
+		instr[1] = (instr[1] & 0xF800) | (uint16_t)(i);
+
+
+		instr[0] = (instr[0] & 0xF800) | (uint16_t)j;
+
+		PRINTF("\tinstr[0]: %x, instr[1]: %x\n", instr[0], instr[1]);
+
+		cfs_seek(input_fd, -4, CFS_SEEK_CUR);
+		cfs_write(input_fd, &instr, 4);
+		}
+		*/
+		
+		
+		
+		/*uint16_t instr[2];
 		int32_t offset;
 		char *base;
 		cfs_read(input_fd, (char *) instr, 4);
@@ -111,7 +226,9 @@ int elfloader_arch_relocate(int input_fd, unsigned int sectionoffset,
 		cfs_write(input_fd, &instr, 4);
 
 		PRINTF("cfs_write: %04x %04x\n", instr[0], instr[1]);
-	}
+		}
+		*/
+	
 		break;
 	default:
 		PRINTF("elfloader-arm.c: unsupported relocation type %d\n", type);
@@ -132,15 +249,18 @@ void *elfloader_arch_allocate_ram(int size) {
 }
 
 void *elfloader_arch_allocate_rom(int size) {
-	if (size > sizeof(textmemory)) {
-		PRINTF("RESERVED FLASH TOO SMALL\n");
-	}
-	PRINTF("TEXTMEMORY LOCATION: 0x%08x \n", &textmemory);
-	return (void *) textmemory;
+	//~ if (size > sizeof(textmemory)) {
+		//~ PRINTF("RESERVED FLASH TOO SMALL\n");
+	//~ }
+	//~ PRINTF("TEXTMEMORY LOCATION: %p 0x%08x \n", (void*)text_addr, text_addr);
+	//~ flash_erase((uint32_t) &textmemory, 2048);
+	//~ return (void *) textmemory;
+	PRINTF("TEXTMEMORY LOCATION: %p 0x%08x \n", (void*)text_addr, text_addr);
+	flash_erase(text_addr, 2048);
+	return (void*) text_addr;
 }
 
-void elfloader_arch_write_rom(int fd, unsigned short textoff, unsigned int size,
-		char *mem) {
+void elfloader_arch_write_rom(int fd, unsigned short textoff, unsigned int size, char *mem) {
 #if TEXT_IN_ROM
 	PRINTF("FD: %d, TEXTOFF: %p, SIZE: %d, MEM: %p \n", fd, textoff, size, mem);
 
@@ -151,7 +271,7 @@ void elfloader_arch_write_rom(int fd, unsigned short textoff, unsigned int size,
 
 	// read data from file into RAM
 	nbytes = cfs_read(fd, (unsigned char *) datamemory, size);
-
+	PRINTF("Before ROM write\n");
 	int i;
 	for (i = 0; i < size; i++) {
 		PRINTF("0x%02X,", datamemory[i]);
@@ -161,15 +281,13 @@ void elfloader_arch_write_rom(int fd, unsigned short textoff, unsigned int size,
 	}
 	PRINTF("\n");
 
-	uint32_t *addr = mem;
-
 	// write data to flash
-	flash_write(addr, datamemory, size);
-
-	flash_read(addr, tmp_buf, size);
-
-	for(i = 0; i < size; i++) {
-		PRINTF("0x%02X,", tmp_buf[i]);
+	flash_compwrite( (uint32_t) mem , datamemory, size);
+	flash_compread((uint32_t) mem , datamemory, size);
+	
+	PRINTF("After ROM write\n");
+	for (i = 0; i < size; i++) {
+		PRINTF("0x%02X,", ((uint8_t*)datamemory)[i]);
 		if (((i + 1) % 20) == 0) {
 			PRINTF("\n");
 		}

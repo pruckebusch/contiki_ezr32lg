@@ -79,11 +79,13 @@ void flash_init(void)
 }
 
 int flash_write(uint32_t address, uint32_t* data, uint32_t length) {
-	PRINTF("Start writing at address 0x%08X \n", address);
+	PRINTF("Start writing %u bytees at address 0x%08X \n", length, address);
 
 	uint32_t wordIndex;
 	uint32_t timeOut;
 	uint32_t *addr_ptr = (uint32_t*) address;
+	//~ uint32_t *data_ptr = data;
+	//~ PRINTF("ADDR PTR: %p DATA: 0x%08X \n", addr_ptr, *data);
 
 	/*
 	if (SystemCoreClock >= 1000000) {
@@ -109,7 +111,7 @@ int flash_write(uint32_t address, uint32_t* data, uint32_t length) {
 			MSC->WDATA = *data++;
 			wordIndex++;
 			MSC->WRITECMD = MSC_WRITECMD_WRITEONCE;
-			PRINTF("ADDR PTR: %p DATA: 0x%08X \n", addr_ptr, *data);
+			
 			++addr_ptr;
 		}
 	} else {
@@ -161,14 +163,14 @@ int flash_erase(uint32_t start_address, uint32_t length) {
 }
 
 int flash_compread(uint32_t address, void * data, uint32_t length) {
-	PRINTF("FLASH COMPREAD IN \n");
+	//PRINTF("FLASH COMPREAD IN \n");
 	uint32_t i = 0;
 
 	for (i = 0; i < length; i++) {
 		((uint8_t *) data)[i] = ~(*(uint8_t *) (address + i));
 	}
 
-	PRINTF("FLASH COMPREAD OUT \n");
+	//PRINTF("FLASH COMPREAD OUT \n");
 
 	return length;
 }
@@ -198,6 +200,9 @@ int flash_compwrite(uint32_t address, const char * data, uint32_t length) {
 		return retval;
 	} else {
 		PRINTF("WROTE %d BYTES TO MEMORY \n", length);
+		if(length == 4){
+			PRINTF("tmp_buf: 0x%08X\n",tmp_buf);
+		}
 		return length;
 	}
 }

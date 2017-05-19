@@ -45,10 +45,10 @@
 
 #include <limits.h>
 #include <string.h>
-
-#define DEBUG 1
-#if DEBUG
 #include <stdio.h>
+#define DEBUG 0
+#if DEBUG
+
 #define PRINTF(...) printf(__VA_ARGS__)
 #else
 #define PRINTF(...)
@@ -1227,8 +1227,12 @@ cfs_write(int fd, const void *buf, unsigned size)
       return -1;
     }
 #endif /* COFFEE_APPEND_ONLY */
-
     COFFEE_WRITE(buf, size, absolute_offset(file->page, fdp->offset));
+    if(size == 4){
+		uint32_t val;
+		COFFEE_READ(&val,size, absolute_offset(file->page, fdp->offset));
+		printf("before 0x%08X after 0x%08X\n",*((uint32_t*) buf),val);
+	}
     fdp->offset += size;
 #if COFFEE_MICRO_LOGS
   }
