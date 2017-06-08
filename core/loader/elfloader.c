@@ -542,6 +542,17 @@ elfloader_load(int fd)
   PRINTF("data base address: data.address = 0x%08x\n", data.address);
   PRINTF("text base address: text.address = 0x%08x\n", text.address);
   PRINTF("rodata base address: rodata.address = 0x%08x\n", rodata.address);
+  
+  /* Circumvent the CFS error while writing the result of the R_ARM_THM_CALL relocation. 
+   * Now we will write the relocation directly to the ROM address of the eventual binary 
+   * */
+   
+   /* Write text and rodata segment into flash and data segment into RAM. 
+  elfloader_arch_write_rom(fd, textoff, textsize, text.address);
+  elfloader_arch_write_rom(fd, rodataoff, rodatasize, rodata.address);
+  memset(bss.address, 0, bsssize);
+  memset(data.address, 0, datasize);
+  seek_read(fd, dataoff, data.address, datasize); */
 
   /* If we have text segment relocations, we process them. */
   if(textrelasize > 0) {
@@ -586,6 +597,15 @@ elfloader_load(int fd)
       return ret;
     }
   }
+  
+  //~ for(i=0;i<textsize;i+=4){
+		//~ uint32_t val = 0;
+		//~ int j = 0;
+		//~ flash_compread(((uint32_t) text.address) + i, &val, 4, 0);
+		//~ for(j=0;j<4;j++){
+			//~ printf("0x%02X,",((uint8_t*) &val)[j]);
+		//~ }
+  //~ }
 
   /* Write text and rodata segment into flash and data segment into RAM. */
   elfloader_arch_write_rom(fd, textoff, textsize, text.address);

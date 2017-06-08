@@ -46,7 +46,7 @@
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG
 
 #define PRINTF(...) printf(__VA_ARGS__)
@@ -243,7 +243,7 @@ absolute_offset(coffee_page_t page, cfs_offset_t offset)
 }
 /*---------------------------------------------------------------------------*/
 static coffee_page_t
-get_sector_status(uint16_t sector, struct sector_status *stats)
+get_sector_status(coffee_page_t sector, struct sector_status *stats)
 {
   static coffee_page_t skip_pages;
   static char last_pages_are_active;
@@ -365,7 +365,7 @@ isolate_pages(coffee_page_t start, coffee_page_t skip_pages)
 static void
 collect_garbage(int mode)
 {
-  uint16_t sector;
+  coffee_page_t sector;
   struct sector_status stats;
   coffee_page_t first_page, isolation_count;
 
@@ -378,7 +378,7 @@ collect_garbage(int mode)
   for(sector = 0; sector < COFFEE_SECTOR_COUNT; sector++) {
     isolation_count = get_sector_status(sector, &stats);
     PRINTF("Coffee: Sector %u has %u active, %u obsolete, and %u free pages.\n",
-        sector, (unsigned)stats.active,
+           (unsigned)sector, (unsigned)stats.active,
 	(unsigned)stats.obsolete, (unsigned)stats.free);
 
     if(stats.active > 0) {
@@ -1228,11 +1228,11 @@ cfs_write(int fd, const void *buf, unsigned size)
     }
 #endif /* COFFEE_APPEND_ONLY */
     COFFEE_WRITE(buf, size, absolute_offset(file->page, fdp->offset));
-    if(size == 4){
-		uint32_t val;
-		COFFEE_READ(&val,size, absolute_offset(file->page, fdp->offset));
-		printf("before 0x%08X after 0x%08X\n",*((uint32_t*) buf),val);
-	}
+    //~ if(size == 4){
+		//~ uint32_t val;
+		//~ COFFEE_READ(&val,size, absolute_offset(file->page, fdp->offset));
+		//~ PRINTF("before 0x%08X after 0x%08X\n",*((uint32_t*) buf),val);
+	//~ }
     fdp->offset += size;
 #if COFFEE_MICRO_LOGS
   }

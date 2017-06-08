@@ -172,7 +172,7 @@ PROCESS(actionsensors_process, "Action Sensors");
 
 AUTOSTART_PROCESSES(&actionsensors_process, &led_test_process);
 
-static uint8_t active;
+
 
 static void print_processes(struct process * const processes[]) {
 	/* const struct process * const * p = processes; */
@@ -180,6 +180,22 @@ static void print_processes(struct process * const processes[]) {
 	while (*processes != NULL) {
 		printf(" '%s'", (*processes)->name);
 		processes++;
+	}
+	printf("\n");
+}
+
+static uint32_t buf[4];
+
+void print_buf(){
+	int i;
+	for(i = 0; i<sizeof(buf); i++){
+		printf("%02x",((uint8_t*)buf)[i]);
+		if(i%4 == 1){
+			printf("\n");
+		}
+		else if(i%2 == 1) {
+			printf(" ");
+		}
 	}
 	printf("\n");
 }
@@ -193,10 +209,14 @@ PROCESS_THREAD(actionsensors_process, ev, data) {
 	leds_off(LEDS_ALL);
 
 	elfloader_init();
+	
+	//~ flash_compread(0x00005ed4,&buf,16);
+	//~ print_buf();
+	
+	printf("size of unsigned long %u\n", sizeof(unsigned long));
 
     SENSORS_ACTIVATE(button1_sensor);
     SENSORS_ACTIVATE(button0_sensor);
-    SENSORS_ACTIVATE(battery_sensor);
 
     while (1) {
         PROCESS_WAIT_EVENT_UNTIL(ev == sensors_event);
@@ -204,7 +224,7 @@ PROCESS_THREAD(actionsensors_process, ev, data) {
         	int fd_w = 0;
         	int r_w = 0;
         	
-        	cfs_coffee_format();
+        	//~ cfs_coffee_format();
 
 			fd_w = cfs_open(FILENAME, CFS_WRITE | CFS_READ);
 			if (fd_w < 0) {

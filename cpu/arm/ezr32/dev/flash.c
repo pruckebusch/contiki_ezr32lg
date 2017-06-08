@@ -162,20 +162,22 @@ int flash_erase(uint32_t start_address, uint32_t length) {
 	return length;
 }
 
-int flash_compread(uint32_t address, void * data, uint32_t length) {
+int flash_compread(uint32_t address, void * data, uint32_t length, uint8_t invert_bits) {
 	//PRINTF("FLASH COMPREAD IN \n");
-	uint32_t i = 0;
-
-	for (i = 0; i < length; i++) {
-		((uint8_t *) data)[i] = ~(*(uint8_t *) (address + i));
+	if(invert_bits){
+		uint32_t i = 0;
+		for (i = 0; i < length; i++) {
+			((uint8_t *) data)[i] = ~(*(uint8_t *) (address + i));
+		}
+	} else {
+		memcpy(data, (uint32_t*) address, length);
 	}
-
 	//PRINTF("FLASH COMPREAD OUT \n");
 
 	return length;
 }
 
-int flash_compwrite(uint32_t address, const char * data, uint32_t length) {
+int flash_compwrite(uint32_t address, const char * data, uint32_t length, uint8_t invert_bits) {
 	PRINTF("FLASH COMPWRITE IN to address: 0x%08x with length: %d \n", address, length);
 	msc_Return_TypeDef retval = mscReturnOk;
 	uint32_t i = 0;
@@ -187,9 +189,13 @@ int flash_compwrite(uint32_t address, const char * data, uint32_t length) {
 
 	for (i = 0; i < length; i = i + 4) {
 		memcpy(&tmp_buf, data + i, 4);
-		tmp_buf = ~tmp_buf;
+		if(invert_bits){
+			tmp_buf = ~tmp_buf;
+		}
 		retval = MSC_WriteWord((uint32_t *) (address + i), (const void*) &tmp_buf, 4);
 	}
+	
+	//retval = MSC_WriteWord((uint32_t *) address, data, length);
 
 	INT_Enable();
 	ENERGEST_OFF(ENERGEST_TYPE_FLASH_WRITE);
@@ -201,7 +207,7 @@ int flash_compwrite(uint32_t address, const char * data, uint32_t length) {
 	} else {
 		PRINTF("WROTE %d BYTES TO MEMORY \n", length);
 		if(length == 4){
-			PRINTF("tmp_buf: 0x%08X\n",tmp_buf);
+			PRINTF("tmp_buf: 0x%08X 0x%08X\n",tmp_buf, ~tmp_buf);
 		}
 		return length;
 	}

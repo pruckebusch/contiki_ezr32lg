@@ -44,10 +44,10 @@ typedef uint32_t coffee_page_t;
 
 // mapping configuration parameters to storage device parameters
 #define COFFEE_WRITE(buf, size, offset)				\
-		flash_compwrite(COFFEE_START + (offset), (char *)(buf), (size))
+		flash_compwrite(COFFEE_START + (offset), (char *)(buf), (size), 1)
 
 #define COFFEE_READ(buf, size, offset)				\
-  		flash_compread(COFFEE_START + (offset), (char *)(buf), (size))
+  		flash_compread(COFFEE_START + (offset), (char *)(buf), (size), 1)
 
 #define COFFEE_ERASE(sector)					\
   		flash_erase(COFFEE_START + (sector) * COFFEE_SECTOR_SIZE, COFFEE_SECTOR_SIZE)

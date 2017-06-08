@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <malloc.h>
-
+#include <string.h>
 #include "elfloader.h"
 #include "flash.h"
+
+
 
 #define DEBUG 1
 #if DEBUG
@@ -58,12 +60,12 @@ void relJmpCall(int input_fd, elf32_addr relAddr, elf32_addr symAddr, uint32_t a
     ((~(J2 ^ S) & 1) << 22) | /* J2    -> offset[22] */
     ((upper_insn & 0x03ff) << 12) | /* imm10 -> offset[12:21] */
     ((lower_insn & 0x07ff) << 1); /* imm11 -> offset[1:11] */
-  printf("offset 0x%08x, %d\n", offset, offset);
+  //~ printf("offset 0x%08x, %d\n", offset, offset);
   if (offset & 0x01000000)
     offset -= 0x02000000;
-  printf("offset 0x%08x, %d\n", offset, offset);
+  //~ printf("offset 0x%08x, %d\n", offset, offset);
   offset += symAddr - relAddr;
-  printf("offset 0x%08x, %d\n", offset, offset);
+  //~ printf("offset 0x%08x, %d\n", offset, offset);
   S = (offset >> 24) & 1;
   J1 = S ^ (~(offset >> 23) & 1);
   J2 = S ^ (~(offset >> 22) & 1);
@@ -78,6 +80,7 @@ void relJmpCall(int input_fd, elf32_addr relAddr, elf32_addr symAddr, uint32_t a
   if(cfs_write(input_fd, &relValue, 4) != 4){
 	  printf("CFS ERROR!!!!!\n");
   }
+  //flash_compwrite(relAddr, (const char *) &relValue, 4, 0);
 }
 
 int elfloader_arch_relocate(int input_fd, unsigned int sectionoffset,
@@ -106,6 +109,11 @@ int elfloader_arch_relocate(int input_fd, unsigned int sectionoffset,
 		PRINTF("addend: %lx, addr: %p\n", rela->r_addend, addr);
 		addr += rela->r_addend;
 		cfs_write(input_fd, &addr, sizeof(char*));
+		//~ if((uint32_t) sectionaddr < 0x2000000){
+			//~ flash_compwrite((uint32_t) (sectionaddr + rela->r_offset), (const char *) &addr, 4, 0);	
+		//~ } else {
+			//~ memcpy(sectionaddr + rela->r_offset,&addr,4);
+		//~ }
 		PRINTF("sectionadd + rela->r_offset: %p, addr: %p\n", sectionaddr + rela->r_offset, addr);
 		
 		/*int32_t addend;
@@ -282,8 +290,8 @@ void elfloader_arch_write_rom(int fd, unsigned short textoff, unsigned int size,
 	PRINTF("\n");
 
 	// write data to flash
-	flash_compwrite( (uint32_t) mem , datamemory, size);
-	flash_compread((uint32_t) mem , datamemory, size);
+	flash_compwrite( (uint32_t) mem , datamemory, size, 0);
+	flash_compread((uint32_t) mem , datamemory, size, 0);
 	
 	PRINTF("After ROM write\n");
 	for (i = 0; i < size; i++) {
